@@ -1,0 +1,12 @@
+out/
+out-qa/
+qa-shots/
+qa-http.log
+qa_radar.py
+serve_qa.py
+refresh.ts
+shot-mobile.png
+__pycache__/
+*.pyc
+.DS_Store
+node_modules/

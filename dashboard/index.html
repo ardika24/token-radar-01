@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TOKEN RADAR / pre-token protocol board</title>
+<meta name="description" content="A ranked board of DeFi protocols that record no token, by what a launch would be worth.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">TR</span>
+    <span class="brandtext">
+      <b>TOKEN RADAR</b>
+      <i>pre-token protocol board</i>
+    </span>
+  </div>
+  <div class="strip" id="strip" aria-label="snapshot summary"></div>
+  <div class="status" id="status" aria-live="polite"></div>
+</header>
+
+<main class="shell">
+  <section class="tabs" id="tabs" role="tablist" aria-label="views"></section>
+
+  <section class="toolbar" aria-label="filters">
+    <label class="field search">
+      <span class="tag">FIND</span>
+      <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="name, slug, category, chain">
+    </label>
+    <label class="field">
+      <span class="tag">CHAIN</span>
+      <select id="chain"><option value="">all chains</option></select>
+    </label>
+    <label class="field">
+      <span class="tag">SECTOR</span>
+      <select id="cat"><option value="">all sectors</option></select>
+    </label>
+    <label class="field">
+      <span class="tag">TVL</span>
+      <select id="tvl">
+        <option value="0">any</option>
+        <option value="50000000">50M+</option>
+        <option value="200000000">200M+</option>
+        <option value="1000000000">1B+</option>
+      </select>
+    </label>
+    <label class="field">
+      <span class="tag">AGE</span>
+      <select id="age">
+        <option value="0">any</option>
+        <option value="365">under 1y</option>
+        <option value="730">under 2y</option>
+        <option value="1095">under 3y</option>
+      </select>
+    </label>
+    <button class="btn ghost" id="reset" type="button">reset</button>
+  </section>
+
+  <section class="board" aria-label="board">
+    <div class="tablewrap">
+      <table id="table">
+        <thead id="thead"></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <p class="empty" id="empty" hidden>No protocol matches these filters. Loosen one, or reset the board.</p>
+    </div>
+    <p class="note" id="note"></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <span id="method"></span>
+  <span>Records, not proof. Implied value is this board's claim, not make.fun's.</span>
+</footer>
+
+<aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="dname">
+  <div class="dhead">
+    <div>
+      <h2 id="dname"></h2>
+      <p class="dsub" id="dsub"></p>
+    </div>
+    <button class="btn ghost" id="dclose" type="button" aria-label="Close detail">esc</button>
+  </div>
+  <div class="dbody" id="dbody"></div>
+</aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<noscript><p class="fatal">This board renders itself in the browser. Enable JavaScript to read it.</p></noscript>
+<script src="../data.js"></script>
+<script src="core.js"></script>
+<script src="table.js"></script>
+<script src="rows.js"></script>
+<script src="drawer.js"></script>
+<script src="boot.js"></script>
+</body>
+</html>
