@@ -232,9 +232,9 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
     flags.push(fl("anchor", "Valuation anchor", "warn", "Thin peer set: the multiple leans on the field's median."));
   }
   flags.push(fl("token", "Token record", "pass", "DefiLlama records no token: a record, not proof."));
-  if (odds >= 55) {
+  if (odds >= 50) {
     flags.push(fl("odds", "Token odds", "pass", odds + "% of this category's tracked peers already trade a token."));
-  } else if (odds >= 35) {
+  } else if (odds >= 20) {
     flags.push(fl("odds", "Token odds", "warn", odds + "% of this category's peers trade a token: a launch is plausible, not established."));
   } else {
     flags.push(fl("odds", "Token odds", "fail", "Only " + odds + "% of this category's peers trade a token: the launch is speculative."));
@@ -250,7 +250,7 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
   const band = (stat?.total ?? 0) >= 12 ? 0.3 : 0.42;
   const ci_low = Math.max(1, Math.round(implied * (1 - band)));
   const ci_high = Math.round(implied * (1 + band));
-  const verdict: "FARM" | "WATCH" | "SKIP" = total < 55 || edge < 0.25 ? "SKIP" : total < 68 || edge < 0.45 || odds < 15 ? "WATCH" : "FARM";
+  const verdict: "FARM" | "WATCH" | "SKIP" = total < 55 || edge < 0.25 ? "SKIP" : total < 68 || edge < 0.45 || odds < 20 ? "WATCH" : "FARM";
   const verdict_why = "radar " + total + ", " + edge.toFixed(2) + "x TVL, " + odds + "% peer token rate";
   const farm_steps = farmPlan(p, age, total, verdict, odds).map(stepText);
 

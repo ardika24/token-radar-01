@@ -24,7 +24,7 @@ Node 22.18 or newer, no dependencies to install.
 - **Radar score** = 0.55 alpha + 0.45 safety, 1..100. It is a ranking aid, never the value claim.
 - **Token odds** = the share of the category's tracked protocols that already trade a token, shrunk to the field rate with a prior of 8 peers. It is a base rate, not a prediction.
 - **Valuation band** = +/-30% around the implied value for categories with 12+ tracked protocols, +/-42% for thin categories.
-- **Verdict** = FARM when radar >= 68 and implied >= 0.45x TVL; WATCH at radar >= 55 and 0.25x TVL; otherwise SKIP. The verdict is a rule, so it can be checked against the numbers in the drawer.
+- **Verdict** = FARM when radar >= 68, implied >= 0.45x TVL and at least 20% of category peers trade a token; WATCH at radar >= 55 and 0.25x TVL; otherwise SKIP. The verdict is a rule, so it can be checked against the numbers in the drawer.
 
 ## What it does
 
