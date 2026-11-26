@@ -10,14 +10,15 @@ export interface FarmStep {
 }
 
 const VENUE_EXCLUDE = new Set([
-  "binance", "coinbase", "bybit", "kraken", "bitget", "okx", "bitfinex", "gemini",
+  "coinbase", "bybit", "kraken", "bitget", "okx", "bitfinex", "gemini",
 ]);
 
 function venues(p: SnapshotProtocol): string[] {
   const out: string[] = [];
   for (const c of p.chains) {
     if (VENUE_EXCLUDE.has(c.trim().toLowerCase())) continue;
-    if (out.indexOf(c) < 0) out.push(c);
+    const label = c.trim().toLowerCase() === "binance" ? "BNB Chain" : c;
+    if (out.indexOf(label) < 0) out.push(label);
   }
   return out;
 }

@@ -10,3 +10,7 @@ __pycache__/
 *.pyc
 .DS_Store
 node_modules/
+
+qa-report.json
+audit2.py
+shot3.py
