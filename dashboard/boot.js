@@ -77,6 +77,11 @@
     var ms = med(D.rows.map(function (r) { return r.score.total; }));
 
     App.stripEl.textContent = "";
+    var cov = App.byId("cov");
+    if (cov) {
+      cov.textContent = "watchlist " + covered + "/" + D.watchlist_size + (covered === D.watchlist_size ? " \u2713" : "");
+      cov.className = covered === D.watchlist_size ? "cov" : "cov miss";
+    }
     var bits = [
       ["board", String(D.board_size)],
       ["covered", covered + "/" + D.watchlist_size],
