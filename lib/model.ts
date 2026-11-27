@@ -1,3 +1,4 @@
+import "../dashboard/00-model.js";
 // The radar's model: one sealed snapshot in, one ranked board out.
 // Every number here is derived from the snapshot's own fields; no protocol name is special-cased.
 
@@ -134,6 +135,9 @@ export function parseSnapshot(text: string): Snapshot {
 
 export interface CatStat {
   multiple: number;
+  raw_multiple: number;
+  weight: number;
+  thin: boolean;
   n: number;
   growth_med: number | null;
   growth_mad: number | null;
@@ -149,10 +153,13 @@ export interface Model {
   global_token_rate: number;
   anchors: number;
   dispersion: number;
+  all_ratios: number[];
+  ratios_by_category: Map<string, number[]>;
   by_category: Map<string, CatStat>;
 }
 
-const PRIOR = 6;
+const PRIOR = 8;
+const MIN_PEERS = 2;
 const TOKEN_PRIOR = 8;
 const MIN_MULTIPLE = 0.03;
 const MAX_MULTIPLE = 2.5;
@@ -163,81 +170,11 @@ function ratioOf(p: SnapshotProtocol): number | null {
 }
 
 export function buildModel(protocols: SnapshotProtocol[]): Model {
-  const allRatios: number[] = [];
-  const allGrowth: number[] = [];
-  const rByCat = new Map<string, number[]>();
-  const gByCat = new Map<string, number[]>();
-  const tByCat = new Map<string, number>();
-  const nByCat = new Map<string, number>();
-  let tokenTotal = 0;
-
-  for (const p of protocols) {
-    const key = catKey(p.category);
-    const hasToken = p.mcap_usd !== null || p.gecko_id !== null || p.symbol !== null;
-    if (hasToken) tokenTotal++;
-    nByCat.set(key, (nByCat.get(key) ?? 0) + 1);
-    if (hasToken) tByCat.set(key, (tByCat.get(key) ?? 0) + 1);
-
-    const r = ratioOf(p);
-    if (r !== null) {
-      allRatios.push(r);
-      const list = rByCat.get(key);
-      if (list === undefined) rByCat.set(key, [r]);
-      else list.push(r);
-    }
-    if (p.change_7d !== null) {
-      allGrowth.push(p.change_7d);
-      const list = gByCat.get(key);
-      if (list === undefined) gByCat.set(key, [p.change_7d]);
-      else list.push(p.change_7d);
-    }
+  const RC_MODEL = (globalThis as any).RCModel;
+  if (!RC_MODEL || typeof RC_MODEL.buildModel !== "function") {
+    throw new Error("00-model.js did not expose buildModel");
   }
-
-  const globalMed = median(allRatios);
-  const globalMultiple = globalMed === null ? 0.2 : clamp(globalMed, 0.03, 3);
-  const growthMed = median(allGrowth);
-  const growthMad = growthMed === null ? null : mad(allGrowth, growthMed);
-  const globalTokenRate = protocols.length > 0 ? tokenTotal / protocols.length : 0.5;
-  const devs = allRatios.map((r) => Math.abs(Math.log(r / globalMultiple)));
-  const dispersion = median(devs) ?? Math.log(2);
-
-  const by_category = new Map<string, CatStat>();
-  const keys = new Set<string>();
-  for (const k of rByCat.keys()) keys.add(k);
-  for (const k of gByCat.keys()) keys.add(k);
-  for (const k of nByCat.keys()) keys.add(k);
-
-  for (const k of keys) {
-    const rs = rByCat.get(k) ?? [];
-    const own = median(rs);
-    const multiple =
-      own === null
-        ? globalMultiple
-        : clamp((rs.length * own + PRIOR * globalMultiple) / (rs.length + PRIOR), MIN_MULTIPLE, MAX_MULTIPLE);
-    const gs = gByCat.get(k) ?? [];
-    const gm = median(gs);
-    const total = nByCat.get(k) ?? rs.length;
-    const tokens = tByCat.get(k) ?? 0;
-    by_category.set(k, {
-      multiple,
-      n: rs.length,
-      growth_med: gm,
-      growth_mad: gm === null ? null : mad(gs, gm),
-      total,
-      tokens,
-      token_rate: (tokens + TOKEN_PRIOR * globalTokenRate) / (total + TOKEN_PRIOR),
-    });
-  }
-
-  return {
-    global_multiple: globalMultiple,
-    global_growth_med: growthMed,
-    global_growth_mad: growthMad,
-    global_token_rate: globalTokenRate,
-    anchors: allRatios.length,
-    dispersion,
-    by_category,
-  };
+  return RC_MODEL.buildModel(protocols) as Model;
 }
 
 export function ageDays(asOf: string, listedAt: string | null): number | null {

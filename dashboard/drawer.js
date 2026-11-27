@@ -74,18 +74,48 @@
     big.appendChild(right);
     App.dbody.appendChild(big);
 
+    var thin = r.model.thin === true;
+    var shrink = App.h("div", "shrinkline " + (thin ? "thin" : "full"), "");
+    shrink.appendChild(App.h("b", "", thin ? "THIN CATEGORY SHRUNK" : "CATEGORY MULTIPLE"));
+    shrink.appendChild(App.h("span", "", "  n=" + r.model.peer_n + " live peers  \u00b7  " + Math.round(r.model.shrink_weight * 100) + "% own / " + (100 - Math.round(r.model.shrink_weight * 100)) + "% field  \u00b7  raw " + r.model.peer_raw_multiple.toFixed(2) + "x" + (thin ? " (capped 1.5x)" : "") + " \u2192 " + r.model.launch_multiple.toFixed(2) + "x"));
+    App.dbody.appendChild(shrink);
+
     var g = App.h("div", "grid2", "");
     g.appendChild(cell("tvl", RC.usd(r.tvl_usd)));
     g.appendChild(cell("7d tvl change", RC.pct(r.change_7d)));
     g.appendChild(cell("listed", r.listed_at || "not recorded"));
     g.appendChild(cell("tenure", r.age_days === null ? "assumed" : RC.age(r.age_days)));
-    g.appendChild(cell("launch multiple", r.model.launch_multiple + "x"));
+    g.appendChild(cell("launch multiple", "raw " + r.model.peer_raw_multiple.toFixed(2) + "x \u2192 " + r.model.launch_multiple.toFixed(2) + "x"));
     g.appendChild(cell("category peers", r.model.peer_n + " live"));
     g.appendChild(cell("token odds", r.odds + "% of category peers"));
     g.appendChild(cell("implied / tvl", r.edge.toFixed(2) + "x"));
     g.appendChild(cell("valuation band", RC.usd(r.ci_low) + " \u2013 " + RC.usd(r.ci_high)));
     g.appendChild(cell("verdict", r.verdict + " \u00b7 " + r.verdict_why));
     App.dbody.appendChild(g);
+
+    App.dbody.appendChild(section("risk checklist"));
+    r.risk_flags.forEach(function (f) {
+      var d = App.h("div", "flag " + f.status, "");
+      var s = App.h("span", "s", f.status === "pass" ? "\u2713" : f.status === "warn" ? "!" : "\u2715");
+      var txt = App.h("span", "d", "");
+      txt.appendChild(App.h("b", "", f.label));
+      txt.appendChild(App.h("span", "", " \u00b7 " + f.detail));
+      d.appendChild(s);
+      d.appendChild(txt);
+      App.dbody.appendChild(d);
+    });
+
+    var planBudget = RC.fin(RC.st.guideBudget) && RC.st.guideBudget > 0 ? RC.st.guideBudget : RCPlan.defaultBudget(r);
+    var planProfile = RC.st.guideRisk || "Balanced";
+    App.dbody.appendChild(section("farm plan \u00b7 " + RC.usd(planBudget) + " \u00b7 " + planProfile));
+    var planOl = document.createElement("ol");
+    planOl.className = "plan";
+    RCPlan.buildFarmPlan(r, planBudget, planProfile).forEach(function (s) {
+      var li = document.createElement("li");
+      li.textContent = s.text + "  " + s.cost + " / " + s.time;
+      planOl.appendChild(li);
+    });
+    App.dbody.appendChild(planOl);
 
     App.dbody.appendChild(section("score breakdown"));
     var t = App.h("table", "sig", "");
@@ -104,40 +134,6 @@
     tb.appendChild(sig("category risk", String(r.signals.category_risk), "10%"));
     t.appendChild(tb);
     App.dbody.appendChild(t);
-
-    App.dbody.appendChild(section("valuation"));
-    var t2 = App.h("table", "sig", "");
-    var tb2 = document.createElement("tbody");
-    tb2.appendChild(row("tvl", RC.usd(r.tvl_usd)));
-    tb2.appendChild(row("launch multiple", r.model.launch_multiple + "x"));
-    tb2.appendChild(row("growth adj", r.model.growth_adj + "x"));
-    tb2.appendChild(row("tenure adj", r.model.tenure_adj + "x"));
-    tb2.appendChild(row("token odds", r.odds + "% of category peers"));
-    tb2.appendChild(row("valuation band", RC.usd(r.ci_low) + " \u2013 " + RC.usd(r.ci_high)));
-    tb2.appendChild(row("verdict", r.verdict + " \u00b7 " + r.verdict_why));
-    tb2.appendChild(row("implied value", RC.usd(r.implied_value_usd)));
-    t2.appendChild(tb2);
-    App.dbody.appendChild(t2);
-
-    App.dbody.appendChild(section("risk checklist"));
-    r.risk_flags.forEach(function (f) {
-      var d = App.h("div", "flag " + f.status, "");
-      var s = App.h("span", "s", f.status === "pass" ? "\u2713" : f.status === "warn" ? "!" : "\u2715");
-      var txt = App.h("span", "d", "");
-      txt.appendChild(App.h("b", "", f.label));
-      txt.appendChild(App.h("span", "", " \u00b7 " + f.detail));
-      d.appendChild(s);
-      d.appendChild(txt);
-      App.dbody.appendChild(d);
-    });
-
-    App.dbody.appendChild(section("farm plan"));
-    var ol = document.createElement("ol");
-    ol.className = "plan";
-    r.farm_steps.forEach(function (s) {
-      ol.appendChild(App.h("li", "", s));
-    });
-    App.dbody.appendChild(ol);
 
     App.dbody.appendChild(section("act"));
     var wrap = App.h("div", "row2", "");

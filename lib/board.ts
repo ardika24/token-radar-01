@@ -1,9 +1,9 @@
-import { buildModel, isRankable } from "./model.ts";
+import { buildModel, isRankable, ageDays, catKey, median } from "./model.ts";
 import type { Snapshot, SnapshotProtocol, Model } from "./model.ts";
 import { ALPHA_W, BLEND, GROWTH_W, SAFE_W, scoreProtocol } from "./score.ts";
 import type { Scored } from "./score.ts";
 
-export const MODEL_VERSION = "radar-3";
+export const MODEL_VERSION = "radar-4";
 export const EARLY_ROWS = 180;
 export const LIVE_ROWS = 40;
 export const MAX_IMPLIED = 100000000000000;
@@ -34,7 +34,7 @@ export interface BoardRow {
   signals: Record<string, number | null>;
   risk_flags: Array<{ id: string; label: string; status: string; detail: string }>;
   farm_steps: string[];
-  model: Record<string, number>;
+  model: Record<string, number | boolean | string | null>;
   counts: { pass: number; warn: number; fail: number };
 }
 
@@ -91,7 +91,37 @@ export interface Radar {
   board_size: number;
   early_size: number;
   live_size: number;
-  category_baseline: Array<{ category: string; n: number; multiple: number; growth_med: number | null }>;
+  global_multiple: number;
+  global_token_rate: number;
+  shrink_k: number;
+  min_peers: number;
+  category_baseline: Array<{
+    category: string;
+    n: number;
+    total: number;
+    tokens: number;
+    token_rate: number;
+    multiple: number;
+    raw_multiple: number;
+    weight: number;
+    thin: boolean;
+    growth_med: number | null;
+  }>;
+  anchor_rows: Array<{
+    slug: string;
+    name: string;
+    category: string | null;
+    tvl_usd: number;
+    mcap_usd: number;
+    change_7d: number | null;
+    age_days: number | null;
+    pred_value: number;
+  }>;
+  anchor_metrics: {
+    n: number;
+    mdape: number | null;
+    spearman: number | null;
+  };
   integrity: {
     protocols: number;
     watchlist: number;
@@ -109,12 +139,12 @@ export interface Radar {
 
 const METHOD: string[] = [
   "implied_value_usd = tvl_usd * launch_multiple * growth_adj * tenure_adj",
-  "launch_multiple = median mcap/TVL of the snapshot's live-token peers in the same category, shrunk to the field median with a prior of 6 peers, clamped 0.03..2.5",
+  "launch_multiple = median mcap/TVL of the snapshot's live-token peers in the same category; an n=1 category caps its median at 1.5x, then blends w=n/(n+8) with a prior of 8 peers, clamped 0.03..2.5",
   "growth_adj = 1 + 0.35 * clamp(change_7d, -40, 80) / 100, a missing change read as 0",
   "tenure_adj = 0.92 + 0.08 * min(days since DefiLlama listing, 720) / 720, a missing date read as 540",
   "token_odds = share of the category's tracked protocols that already carry a token, shrunk to the field rate with a prior of 8 peers",
   "valuation_band = +/-30% for categories with 12+ tracked protocols, +/-42% for thin categories",
-  "verdict = FARM when radar >= 68 and implied >= 0.45x TVL; WATCH at radar >= 55 and 0.25x TVL; otherwise SKIP",
+  "verdict = FARM when radar >= 68, implied >= 0.35x TVL and token odds >= 20; WATCH at radar >= 55 and 0.25x TVL; otherwise SKIP",
   "alpha = 0.35 relative inflow + 0.25 absolute inflow + 0.15 scale + 0.15 tenure + 0.10 chain breadth",
   "safety = 0.30 liquidity floor + 0.25 seven-day drawdown + 0.20 flow anomaly + 0.15 listing provenance + 0.10 category risk",
   "score = 0.55 * alpha + 0.45 * safety, in 1..100: a ranking aid, never the value claim",
@@ -167,11 +197,95 @@ export function buildRadar(snapshot: Snapshot, market?: Market | null): { rows: 
     });
   }
 
-  const cats: Array<{ category: string; n: number; multiple: number; growth_med: number | null }> = [];
+  const cats: Array<{
+    category: string;
+    n: number;
+    total: number;
+    tokens: number;
+    token_rate: number;
+    multiple: number;
+    raw_multiple: number;
+    weight: number;
+    thin: boolean;
+    growth_med: number | null;
+  }> = [];
   for (const entry of model.by_category) {
-    if (entry[1].n >= 3) {
-      cats.push({ category: entry[0], n: entry[1].n, multiple: Math.round(entry[1].multiple * 1000) / 1000, growth_med: entry[1].growth_med });
+    cats.push({
+      category: entry[0],
+      n: entry[1].n,
+      total: entry[1].total,
+      tokens: entry[1].tokens,
+      token_rate: Math.round(entry[1].token_rate * 1000) / 1000,
+      multiple: Math.round(entry[1].multiple * 1000) / 1000,
+      raw_multiple: Math.round(entry[1].raw_multiple * 1000) / 1000,
+      weight: entry[1].weight,
+      thin: entry[1].thin,
+      growth_med: entry[1].growth_med,
+    });
+  }
+  cats.sort(function (a, b) { return b.total - a.total || (a.category < b.category ? -1 : 1); });
+
+  const anchor_rows: Radar["anchor_rows"] = [];
+  for (const p of snapshot.protocols) {
+    if (p.mcap_usd === null || p.mcap_usd <= 0 || p.tvl_usd <= 0) continue;
+    const s = scoreProtocol(p, snapshot.as_of, model, snapshot.floor_usd);
+    const ownRatio = p.mcap_usd / p.tvl_usd;
+    const peers = (model.ratios_by_category.get(catKey(p.category)) ?? []).slice();
+    for (let pi = 0; pi < peers.length; pi++) {
+      if (Math.abs(peers[pi]! - ownRatio) < 1e-9) {
+        peers.splice(pi, 1);
+        break;
+      }
     }
+    const peerMed = median(peers) ?? model.global_multiple;
+    const capped = peers.length < 2 ? Math.min(peerMed, 1.5) : peerMed;
+    const w = peers.length / (peers.length + 8);
+    const looMultiple = Math.min(2.5, Math.max(0.03, w * capped + (1 - w) * model.global_multiple));
+    const growthPct = Math.min(80, Math.max(-40, p.change_7d ?? 0));
+    const growthAdj = 1 + (growthPct / 100) * GROWTH_W;
+    const tenureAdj = 0.92 + (0.08 * Math.min(p.listed_at === null ? 540 : ageDays(snapshot.as_of, p.listed_at) ?? 540, 720)) / 720;
+    const predValue = Math.max(1, Math.round(p.tvl_usd * looMultiple * growthAdj * tenureAdj));
+    anchor_rows.push({
+      slug: p.slug,
+      name: p.name,
+      category: p.category,
+      tvl_usd: p.tvl_usd,
+      mcap_usd: p.mcap_usd,
+      change_7d: p.change_7d,
+      age_days: s.age_days,
+      pred_value: predValue,
+    });
+  }
+  anchor_rows.sort(function (p, q) { return q.mcap_usd - p.mcap_usd || (p.slug < q.slug ? -1 : 1); });
+
+  const validAnchors: Array<{ i: number; pred: number; actual: number }> = [];
+  anchor_rows.forEach(function (a, i) {
+    if (Number.isFinite(a.pred_value) && a.pred_value > 0 && Number.isFinite(a.mcap_usd) && a.mcap_usd > 0) {
+      validAnchors.push({ i: i, pred: a.pred_value, actual: a.mcap_usd });
+    }
+  });
+  const absLogErrs = validAnchors.map(function (a) { return Math.abs(Math.log(a.pred / a.actual)); }).sort(function (p, q) { return p - q; });
+  const mdape = absLogErrs.length === 0
+    ? null
+    : absLogErrs.length % 2 === 1
+      ? absLogErrs[(absLogErrs.length - 1) >> 1]!
+      : (absLogErrs[(absLogErrs.length >> 1) - 1]! + absLogErrs[absLogErrs.length >> 1]!) / 2;
+  let spearman: number | null = null;
+  if (validAnchors.length >= 2) {
+    const byPred = validAnchors.slice().sort(function (p, q) { return p.pred - q.pred; });
+    const rankPred = new Map<number, number>();
+    byPred.forEach(function (v, i) { rankPred.set(v.i, i + 1); });
+    const byActual = validAnchors.slice().sort(function (p, q) { return p.actual - q.actual; });
+    const rankActual = new Map<number, number>();
+    byActual.forEach(function (v, i) { rankActual.set(v.i, i + 1); });
+    const m = (validAnchors.length + 1) / 2;
+    let cov = 0, vp = 0, va = 0;
+    validAnchors.forEach(function (v) {
+      const dp = rankPred.get(v.i)! - m;
+      const da = rankActual.get(v.i)! - m;
+      cov += dp * da; vp += dp * dp; va += da * da;
+    });
+    if (vp > 0 && va > 0) spearman = Math.round((cov / Math.sqrt(vp * va)) * 1000) / 1000;
   }
 
   const radar: Radar = {
@@ -188,7 +302,17 @@ export function buildRadar(snapshot: Snapshot, market?: Market | null): { rows: 
     board_size: rows.length,
     early_size: rows.length - snapshot.watchlist.length,
     live_size: live.length,
+    global_multiple: Math.round(model.global_multiple * 1000) / 1000,
+    global_token_rate: Math.round(model.global_token_rate * 1000) / 1000,
+    shrink_k: 8,
+    min_peers: 2,
     category_baseline: cats,
+    anchor_rows: anchor_rows,
+    anchor_metrics: {
+      n: validAnchors.length,
+      mdape: mdape === null ? null : Math.round(mdape * 1000) / 1000,
+      spearman: spearman,
+    },
     integrity: {
       protocols: snapshot.protocols.length,
       watchlist: snapshot.watchlist.length,

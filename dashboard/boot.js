@@ -34,7 +34,8 @@
       b.setAttribute("role", "tab");
       b.setAttribute("aria-selected", RC.st.tab === t.id ? "true" : "false");
       b.appendChild(document.createTextNode(t.label));
-      b.appendChild(App.h("b", "", RC.tabCount(t.id)));
+      var n = RC.tabCount(t.id);
+      if (n !== null) b.appendChild(App.h("b", "", n));
       b.addEventListener("click", function () {
         RC.st.tab = t.id;
         App.render();
@@ -110,11 +111,32 @@
   };
 
   App.render = function () {
-    App.renderTabs();
-    App.renderSelects();
-    App.renderChrome();
-
+    var isGuide = RC.st.tab === "guide";
+    var isModel = RC.st.tab === "model";
     var isLive = RC.st.tab === "live";
+
+    App.renderTabs();
+
+    var boardEl = App.byId("board");
+    var toolbarEl = App.byId("toolbar");
+    var guideEl = App.byId("guide");
+    var modelEl = App.byId("modelpage");
+    if (isGuide || isModel) {
+      if (boardEl) boardEl.hidden = true;
+      if (toolbarEl) toolbarEl.hidden = true;
+      if (guideEl) guideEl.hidden = !isGuide;
+      if (modelEl) modelEl.hidden = !isModel;
+      if (isGuide) App.renderGuide();
+      if (isModel) App.renderModelPage();
+      return;
+    }
+    if (boardEl) boardEl.hidden = false;
+    if (toolbarEl) toolbarEl.hidden = false;
+    if (guideEl) guideEl.hidden = true;
+    if (modelEl) modelEl.hidden = true;
+
+    App.renderChrome();
+    App.renderSelects();
     App.renderHead(isLive ? App.LIVE_COLS : App.COLS, isLive);
 
     var rows = isLive ? D.live : App.sortRows(RC.visible());

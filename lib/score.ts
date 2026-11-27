@@ -1,6 +1,13 @@
 import { ageDays, catKey, clamp, logScale } from "./model.ts";
 import type { Model, SnapshotProtocol } from "./model.ts";
-import { farmPlan, stepText } from "./plans.ts";
+import "../dashboard/00-model.js";
+import "../dashboard/00-plan.js";
+
+const RP = (globalThis as any).RCPlan as {
+  defaultBudget: (row: any) => number;
+  buildFarmPlan: (row: any, budget: number, profile: string) => Array<{ text: string; cost: string; time: string }>;
+  stepText: (step: { text: string; cost: string; time: string }) => string;
+};
 
 export interface RiskFlag {
   id: string;
@@ -51,7 +58,10 @@ export interface Scored {
   model: {
     launch_multiple: number;
     peer_multiple: number;
+    peer_raw_multiple: number;
     peer_n: number;
+    shrink_weight: number;
+    thin: boolean;
     growth_adj: number;
     tenure_adj: number;
     growth_pct: number;
@@ -231,6 +241,9 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
   } else {
     flags.push(fl("anchor", "Valuation anchor", "warn", "Thin peer set: the multiple leans on the field's median."));
   }
+  if (stat?.thin === true) {
+    flags.push(fl("shrink", "Thin-category shrink", "warn", "n=" + stat.n + ": " + (stat.weight * 100).toFixed(1) + "% own multiple, " + ((1 - stat.weight) * 100).toFixed(1) + "% field median. One peer is a prior, not a distribution."));
+  }
   flags.push(fl("token", "Token record", "pass", "DefiLlama records no token: a record, not proof."));
   if (odds >= 50) {
     flags.push(fl("odds", "Token odds", "pass", odds + "% of this category's tracked peers already trade a token."));
@@ -241,7 +254,8 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
   }
 
   const peerMultiple = stat === undefined ? model.global_multiple : stat.multiple;
-  const multiple = clamp(peerMultiple, 0.03, 2.5);
+  const roundedMultiple = Math.round(peerMultiple * 1000) / 1000;
+  const multiple = clamp(roundedMultiple, 0.03, 2.5);
   const growthPct = clamp(change ?? 0, -40, 80);
   const growthAdj = 1 + (growthPct / 100) * GROWTH_W;
   const tenureAdj = 0.92 + (0.08 * Math.min(age ?? 540, 720)) / 720;
@@ -250,9 +264,26 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
   const band = (stat?.total ?? 0) >= 12 ? 0.3 : 0.42;
   const ci_low = Math.max(1, Math.round(implied * (1 - band)));
   const ci_high = Math.round(implied * (1 + band));
-  const verdict: "FARM" | "WATCH" | "SKIP" = total < 55 || edge < 0.25 ? "SKIP" : total < 68 || edge < 0.45 || odds < 20 ? "WATCH" : "FARM";
+  const verdict: "FARM" | "WATCH" | "SKIP" = total < 55 || edge < 0.25 ? "SKIP" : total < 68 || edge < 0.35 || odds < 20 ? "WATCH" : "FARM";
   const verdict_why = "radar " + total + ", " + edge.toFixed(2) + "x TVL, " + odds + "% peer token rate";
-  const farm_steps = farmPlan(p, age, total, verdict, odds).map(stepText);
+  const planRow = {
+    ...p,
+    age_days: age,
+    verdict,
+    odds,
+    implied_value_usd: implied,
+    score: { alpha, safety, total },
+    model: {
+      launch_multiple: multiple,
+      peer_multiple: roundedMultiple,
+      peer_raw_multiple: stat?.raw_multiple ?? model.global_multiple,
+      peer_n: stat?.n ?? 0,
+      peer_total: stat?.total ?? 0,
+      shrink_weight: stat?.weight ?? 0,
+      thin: stat?.thin ?? true,
+    },
+  };
+  const farm_steps = RP.buildFarmPlan(planRow, RP.defaultBudget(planRow), "Balanced").map(RP.stepText);
 
   let pass = 0;
   let warn = 0;
@@ -303,9 +334,12 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
     risk_flags: flags,
     farm_steps,
     model: {
-      launch_multiple: Math.round(multiple * 1000) / 1000,
-      peer_multiple: Math.round(peerMultiple * 1000) / 1000,
+      launch_multiple: roundedMultiple,
+      peer_multiple: roundedMultiple,
+      peer_raw_multiple: stat?.raw_multiple ?? model.global_multiple,
       peer_n: stat?.n ?? 0,
+      shrink_weight: stat?.weight ?? 0,
+      thin: stat?.thin ?? true,
       growth_adj: Math.round(growthAdj * 1000) / 1000,
       tenure_adj: Math.round(tenureAdj * 1000) / 1000,
       growth_pct: growthPct,

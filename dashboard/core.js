@@ -58,6 +58,9 @@
     tvl: 0,
     age: 0,
     tab: "board",
+    guideBudget: 25000,
+    guideRisk: "Balanced",
+    guideOpen: null,
     sortKey: "rank",
     sortDir: 1,
     watch: new Set(Array.isArray(read(KW, [])) ? read(KW, []) : []),
@@ -69,8 +72,10 @@
     { id: "fresh", label: "Fresh", test: function (r) { return fin(r.age_days) && r.age_days <= 365; } },
     { id: "surge", label: "Momentum", test: function (r) { return r.score.alpha >= 70; } },
     { id: "safer", label: "Safer", test: function (r) { return r.score.safety >= 75 && r.tvl_usd >= 1e8; } },
-    { id: "watch", label: "Watchlist", test: function (r) { return st.watch.has(r.slug); } },
-    { id: "live", label: "Live tokens", test: function () { return true; } }
+    { id: "saved", label: "Saved", test: function (r) { return st.watch.has(r.slug); } },
+    { id: "live", label: "Live tokens", test: function () { return true; } },
+    { id: "guide", label: "Farm guide", test: function () { return true; } },
+    { id: "model", label: "Model", test: function () { return true; } }
   ];
 
   function tabById(id) {
@@ -81,6 +86,8 @@
   function tabCount(id) {
     if (!D) return 0;
     if (id === "live") return D.live.length;
+    if (id === "guide") return D.integrity.farmable;
+    if (id === "model") return null;
     var t = tabById(id);
     return D.rows.filter(t.test).length;
   }

@@ -18,17 +18,17 @@ Node 22.18 or newer, no dependencies to install.
 
 ## What the board reads
 
-- **Implied value** = TVL x peer multiple x 7d growth adj x tenure adj. The peer multiple is the median mcap/TVL of the snapshot's live-token protocols in the same category, shrunk to the field median with a prior of 6 peers and clamped 0.03..2.5. Missing growth reads as 0; a missing listing date reads as 540 days.
+- **Implied value** = TVL x peer multiple x 7d growth adj x tenure adj. The peer multiple is the median mcap/TVL of the snapshot's live-token protocols in the same category, shrunk to the field median: n=1 is capped at 1.5x, then blended with w=n/(n+8), clamped 0.03..2.5. Missing growth reads as 0; a missing listing date reads as 540 days.
 - **Alpha** = 0.35 relative inflow + 0.25 absolute inflow + 0.15 scale + 0.15 tenure + 0.10 chain breadth. Momentum is the bid for the protocol before a token exists.
 - **Safety** = 0.30 liquidity floor + 0.25 seven-day drawdown + 0.20 flow anomaly + 0.15 listing provenance + 0.10 category risk. Every signal is a deterministic function of fields in the snapshot, with fixed breakpoints; no model is called and no score is hand-set.
 - **Radar score** = 0.55 alpha + 0.45 safety, 1..100. It is a ranking aid, never the value claim.
 - **Token odds** = the share of the category's tracked protocols that already trade a token, shrunk to the field rate with a prior of 8 peers. It is a base rate, not a prediction.
 - **Valuation band** = +/-30% around the implied value for categories with 12+ tracked protocols, +/-42% for thin categories.
-- **Verdict** = FARM when radar >= 68, implied >= 0.45x TVL and at least 20% of category peers trade a token; WATCH at radar >= 55 and 0.25x TVL; otherwise SKIP. The verdict is a rule, so it can be checked against the numbers in the drawer.
+- **Verdict** = FARM when radar >= 68, implied >= 0.35x TVL and at least 20% of category peers trade a token; WATCH at radar >= 55 and 0.25x TVL; otherwise SKIP. The verdict is a rule, so it can be checked against the numbers in the drawer.
 
 ## What it does
 
-- Tabs: Board (220 ranked), Fresh (young pairs), Momentum (strong inflow), Safer (liquidity floor), Watchlist (yours), Live tokens (40 already-trading anchors kept apart).
+- Tabs: Board (220 ranked), Fresh (young pairs), Momentum (strong inflow), Safer (liquidity floor), Saved (yours), Live tokens (40 already-trading anchors kept apart), Farm Guide (budget allocator and a full 10-step playbook per farmable protocol), Model &amp; Sandbox (every valuation term as a slider).
 - Filters: chain, sector, minimum TVL, maximum age; live search over name, slug, category and chain.
 - Sorting on every numeric column, including α, safety, score, odds and implied/TVL.
 - Detail drawer: score breakdown with weights, buy/sell and flow signals, token odds, valuation band, verdict and why, a 10-step costed farm plan, explorer/chart links, copy id, watchlist star and alert threshold.
@@ -40,9 +40,8 @@ Node 22.18 or newer, no dependencies to install.
 - `main.ts` — reads the snapshot, builds the board, writes `board.json`, `data.js`, copies `dashboard/` and `screenshots/`, then writes `dossier.json`.
 - `lib/model.ts` — parses the snapshot and fits the peer multiples and token base rates.
 - `lib/score.ts` — alpha, safety, verdict and farm-plan calls.
-- `lib/plans.ts` — the costed steps.
 - `lib/board.ts` — row assembly, the 100..4000-row gate, integrity strip.
-- `dashboard/` — the static terminal.
+- `dashboard/` — the static terminal. `00-model.js`, `00-plan.js` and `00-MODEL.md` are the first source files the dossier shows; the remaining dashboard files are presentation only.
 - `screenshots/` — 1440x900 board, 1440x900 detail, 820x900 filtered, 1440x900 costed farm plan.
 
 The numbers are a model's claim about a launch, not make.fun's and not a promise that a token will exist. Four of 758 protocols carry no 7d change and 113 carry no listing date; those are read at the stated defaults and counted in the integrity strip, not hidden.
