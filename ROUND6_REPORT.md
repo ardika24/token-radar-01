@@ -4,8 +4,8 @@ Status: **gate lokal lulus, belum disubmit ke token-radar-01.** Tidak ada klaim 
 
 ## 1. Angka final
 
-- `dossier.json`: **1.222.694 bytes** = **1,1661 MiB** (batas 1,5 MiB).
-- Teks dossier: **61.997 bytes** (batas keras 65.536; target 55.000-62.000).
+- `dossier.json`: **1.226.475 bytes** = **1,1697 MiB** (batas 1,5 MiB).
+- Teks dossier: **65.493 bytes** (batas keras 65.536; target 55.000-62.000).
 - Dashboard: **13 file, 119.580 bytes**.
 - Screenshots: **4 file, 867.811 bytes**.
 
@@ -36,12 +36,12 @@ File yang sekarang ada di `dashboard/` dan urutan header dossier (alfabetis, 13 
 12. `rows.js` - 4.539 B
 13. `table.js` - 4.649 B
 
-Urutan yang benar-benar masuk teks dossier (cut 62.000 B):
+Urutan yang benar-benar masuk teks dossier (cut 65.536 B):
 `00-MODEL.md` -> `00-model.js` -> `00-plan.js` -> `app.css` -> `boot.js` -> `core.js` -> `drawer.js` -> **cut**.
 
-Cut line persis: `[Cut at 62000 bytes: 6 files and 58408 bytes left out.]`. Enam file yang tidak ikut teks: `guide.js`, `index.html`, `model-page.js`, `pages.css`, `rows.js`, `table.js` (semuanya tetap dikirim sebagai file dashboard dan tampil di screenshot). Inti matematika + generator farm plan 100% ada di tiga file pertama, jadi judge membaca logika penuh, bukan potongan.
+Cut line persis: `[Cut at 65536 bytes: 6 files and 54912 bytes left out.]`. Enam file yang tidak ikut teks: `guide.js`, `index.html`, `model-page.js`, `pages.css`, `rows.js`, `table.js` (semuanya tetap dikirim sebagai file dashboard dan tampil di screenshot). Inti matematika + generator farm plan 100% ada di tiga file pertama, jadi judge membaca logika penuh, bukan potongan.
 
-`lib/model.ts` sekarang hanya adapter: `buildModel()` mendelegasikan ke `RCModel.buildModel()` di `dashboard/00-model.js`. `main.ts` memakai adapter itu. Build deterministik: `board.json` sha256 `53344f92...`, `data.js` `4de644e8...`, `dossier.json` `445676c4...`; `check_model` 0 mismatch dari 220 row (alpha, safety, total, odds, implied).
+`lib/model.ts` sekarang hanya adapter: `buildModel()` mendelegasikan ke `RCModel.buildModel()` di `dashboard/00-model.js`. `main.ts` memakai adapter itu. Build deterministik: `board.json` sha256 `53344f92...`, `data.js` `4de644e8...`, `dossier.json` `14dadb5c...`; `check_model` 0 mismatch dari 220 row (alpha, safety, total, odds, implied).
 
 ## 3. Lima upgrade
 
@@ -71,7 +71,7 @@ Playwright 1.62 / Chrome, desktop 1440x900:
 Gate internal:
 - `board.json`: 220 row, rank 1..220 unik, 40 watchlist covered, implied unik & non-naik, farm_steps 3-12 string @20-600.
 - `dashboard/`: 13 file, 119.580 B <4 MiB, index.html + css + js, tidak ada `http://`/`https://` di HTML attribute/CSS/JS import.
-- `dossier.json`: 1.222.694 B <1,5 MiB, text 61.997 B <65.536, 4 gambar.
+- `dossier.json`: 1.226.475 B <1,5 MiB, text 65.493 B <65.536, 4 gambar.
 - build deterministik: run kedua menghasilkan dossier hash identik.
 
 ## 5. Skor / win-draw-loss

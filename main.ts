@@ -11,7 +11,7 @@ import { buildDossier } from "./vendor/makefun-board.ts";
 
 const here = fileURLToPath(new URL(".", import.meta.url));
 
-const TEXT_MAX_BYTES = 62_000;
+const TEXT_MAX_BYTES = 65_536;
 const SCREENSHOT_CAPS = { max: 4, max_bytes: 524_288 };
 const DASH_CAPS = { max_files: 400, max_bytes: 4_194_304 };
 const IMAGE_NAME = /^[A-Za-z0-9_][A-Za-z0-9._-]{0,127}$/;
