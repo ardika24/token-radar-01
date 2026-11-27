@@ -39,9 +39,9 @@ File yang sekarang ada di `dashboard/` dan urutan header dossier (alfabetis, 13 
 Urutan yang benar-benar masuk teks dossier (cut 62.000 B):
 `00-MODEL.md` -> `00-model.js` -> `00-plan.js` -> `app.css` -> `boot.js` -> `core.js` -> `drawer.js` -> **cut**.
 
-Cut line persis: `[Cut at 62000 bytes: 6 files and 58362 bytes left out.]`. Enam file yang tidak ikut teks: `guide.js`, `index.html`, `model-page.js`, `pages.css`, `rows.js`, `table.js` (semuanya tetap dikirim sebagai file dashboard dan tampil di screenshot). Inti matematika + generator farm plan 100% ada di tiga file pertama, jadi judge membaca logika penuh, bukan potongan.
+Cut line persis: `[Cut at 62000 bytes: 6 files and 58408 bytes left out.]`. Enam file yang tidak ikut teks: `guide.js`, `index.html`, `model-page.js`, `pages.css`, `rows.js`, `table.js` (semuanya tetap dikirim sebagai file dashboard dan tampil di screenshot). Inti matematika + generator farm plan 100% ada di tiga file pertama, jadi judge membaca logika penuh, bukan potongan.
 
-`lib/model.ts` sekarang hanya adapter: `buildModel()` mendelegasikan ke `RCModel.buildModel()` di `dashboard/00-model.js`. `main.ts` memakai adapter itu. `board.json` dan `data.js` byte-identik dengan build sebelumnya (sha256 `f710ea92...`), `check_model` 0 mismatch dari 220 row.
+`lib/model.ts` sekarang hanya adapter: `buildModel()` mendelegasikan ke `RCModel.buildModel()` di `dashboard/00-model.js`. `main.ts` memakai adapter itu. Build deterministik: `board.json` sha256 `53344f92...`, `data.js` `4de644e8...`, `dossier.json` `445676c4...`; `check_model` 0 mismatch dari 220 row (alpha, safety, total, odds, implied).
 
 ## 3. Lima upgrade
 
