@@ -174,7 +174,7 @@
   function alphaParts(row) {
     var s = row.signals || {};
     var z = fin(s.relative_z) ? s.relative_z : 0;
-    var relative = clamp(((z + 3) / 6) * 100, 0, 100);
+    var relative = fin(s.relative_score) ? clamp(s.relative_score, 0, 100) : clamp(((z + 3) / 6) * 100, 0, 100);
     var change = fin(s.inflow_pct) ? s.inflow_pct : (fin(row.change_7d) ? row.change_7d : 0);
     var absolute = clamp(50 + change * 1.8, 0, 100);
     return [

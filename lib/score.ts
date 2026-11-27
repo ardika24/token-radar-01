@@ -18,6 +18,7 @@ export interface RiskFlag {
 
 export interface Signals {
   relative_z: number;
+  relative_score: number;
   inflow_pct: number;
   scale: number;
   tenure: number;
@@ -175,13 +176,17 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
   const scale = logScale(p.tvl_usd, 5e6, 5e9);
   const tenure = tenScore(age);
   const breadth = breadthScore(p.chains.length);
+  const relativeSignal = Math.round(relative * 100) / 100;
+  const scaleSignal = Math.round(scale);
+  const tenureSignal = Math.round(tenure);
+  const breadthSignal = Math.round(breadth);
 
   const alpha = Math.round(
-    ALPHA_W.relative * relative +
+    ALPHA_W.relative * relativeSignal +
       ALPHA_W.absolute * absolute +
-      ALPHA_W.scale * scale +
-      ALPHA_W.tenure * tenure +
-      ALPHA_W.breadth * breadth
+      ALPHA_W.scale * scaleSignal +
+      ALPHA_W.tenure * tenureSignal +
+      ALPHA_W.breadth * breadthSignal
   );
 
   const liquidity = floorScore(p.tvl_usd);
@@ -296,6 +301,7 @@ export function scoreProtocol(p: SnapshotProtocol, asOf: string, model: Model, f
 
   const signals: Signals = {
     relative_z: Math.round(z * 100) / 100,
+    relative_score: relativeSignal,
     inflow_pct: change ?? 0,
     scale: Math.round(scale),
     tenure: Math.round(tenure),

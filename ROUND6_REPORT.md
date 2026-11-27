@@ -4,14 +4,14 @@ Status: **gate lokal lulus, belum disubmit ke token-radar-01.** Tidak ada klaim 
 
 ## 1. Angka final
 
-- `dossier.json`: **1.223.078 bytes** = **1.1667 MiB** (batas 1,5 MiB).
-- Teks dossier: **61.985 bytes** (batas keras 65.536; target 55.000-62.000).
-- Dashboard: **13 file, 119.522 bytes**.
-- Screenshots: **4 file, 868.106 bytes**.
+- `dossier.json`: **1.222.694 bytes** = **1,1661 MiB** (batas 1,5 MiB).
+- Teks dossier: **61.997 bytes** (batas keras 65.536; target 55.000-62.000).
+- Dashboard: **13 file, 119.580 bytes**.
+- Screenshots: **4 file, 867.811 bytes**.
 
 | file | dimensi | bytes |
 |---|---:|---:|
-| 1-board.png | 1440x900 | 172.836 |
+| 1-board.png | 1440x900 | 172.541 |
 | 2-farm-guide.png | 1440x1350 | 278.927 |
 | 3-model-sandbox.png | 1440x1350 | 180.103 |
 | 4-detail-drawer.png | 1440x1400 | 236.240 |
@@ -23,7 +23,7 @@ Semua gambar PNG utuh, <512 KiB, long side <=1440, short side >=800. Cover dossi
 File yang sekarang ada di `dashboard/` dan urutan header dossier (alfabetis, 13 file):
 
 1. `00-MODEL.md` - 5.262 B / 66 baris
-2. `00-model.js` - 13.881 B / 394 baris
+2. `00-model.js` - 13.939 B / 394 baris
 3. `00-plan.js` - 16.540 B / 316 baris
 4. `app.css` - 11.928 B
 5. `boot.js` - 8.015 B
