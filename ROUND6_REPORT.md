@@ -5,7 +5,7 @@ Status: **gate lokal lulus, belum disubmit ke token-radar-01.** Tidak ada klaim 
 ## 1. Angka final
 
 - `dossier.json`: **1.226.475 bytes** = **1,1697 MiB** (batas 1,5 MiB).
-- Teks dossier: **65.493 bytes** (batas keras 65.536; target 55.000-62.000).
+- Teks dossier: **65.493 bytes** (batas keras 65.536; target soft 55.000-62.000; target soft tidak bisa dipakai kalau `dossier_matches` harus exact `text_max_bytes:65536` dan inti 00 tetap utuh).
 - Dashboard: **13 file, 119.580 bytes**.
 - Screenshots: **4 file, 867.811 bytes**.
 
