@@ -1,4 +1,4 @@
-import "../dashboard/00-model.js";
+import "../dashboard/01-model.js";
 // The radar's model: one sealed snapshot in, one ranked board out.
 // Every number here is derived from the snapshot's own fields; no protocol name is special-cased.
 
@@ -172,7 +172,7 @@ function ratioOf(p: SnapshotProtocol): number | null {
 export function buildModel(protocols: SnapshotProtocol[]): Model {
   const RC_MODEL = (globalThis as any).RCModel;
   if (!RC_MODEL || typeof RC_MODEL.buildModel !== "function") {
-    throw new Error("00-model.js did not expose buildModel");
+    throw new Error("01-model.js did not expose buildModel");
   }
   return RC_MODEL.buildModel(protocols) as Model;
 }

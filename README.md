@@ -41,7 +41,7 @@ Node 22.18 or newer, no dependencies to install.
 - `lib/model.ts` — parses the snapshot and fits the peer multiples and token base rates.
 - `lib/score.ts` — alpha, safety, verdict and farm-plan calls.
 - `lib/board.ts` — row assembly, the 100..4000-row gate, integrity strip.
-- `dashboard/` — the static terminal. `00-model.js`, `00-plan.js` and `00-MODEL.md` are the first source files the dossier shows; the remaining dashboard files are presentation only.
+- `dashboard/` — the static terminal. `01-model.js`, `02-plan.js` and `00-MODEL.md` are the first source files the dossier shows; the remaining dashboard files are presentation only.
 - `screenshots/` — 1440x900 board, 1440x900 detail, 820x900 filtered, 1440x900 costed farm plan.
 
 The numbers are a model's claim about a launch, not make.fun's and not a promise that a token will exist. Four of 758 protocols carry no 7d change and 113 carry no listing date; those are read at the stated defaults and counted in the integrity strip, not hidden.

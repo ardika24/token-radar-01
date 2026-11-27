@@ -1,7 +1,7 @@
 import { ageDays, catKey, clamp, logScale } from "./model.ts";
 import type { Model, SnapshotProtocol } from "./model.ts";
-import "../dashboard/00-model.js";
-import "../dashboard/00-plan.js";
+import "../dashboard/01-model.js";
+import "../dashboard/02-plan.js";
 
 const RP = (globalThis as any).RCPlan as {
   defaultBudget: (row: any) => number;

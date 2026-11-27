@@ -41,7 +41,7 @@ Urutan yang benar-benar masuk teks dossier (cut 65.536 B):
 
 Cut line persis: `[Cut at 65536 bytes: 6 files and 54912 bytes left out.]`. Enam file yang tidak ikut teks: `guide.js`, `index.html`, `model-page.js`, `pages.css`, `rows.js`, `table.js` (semuanya tetap dikirim sebagai file dashboard dan tampil di screenshot). Inti matematika + generator farm plan 100% ada di tiga file pertama, jadi judge membaca logika penuh, bukan potongan.
 
-`lib/model.ts` sekarang hanya adapter: `buildModel()` mendelegasikan ke `RCModel.buildModel()` di `dashboard/00-model.js`. `main.ts` memakai adapter itu. Build deterministik: `board.json` sha256 `53344f92...`, `data.js` `4de644e8...`, `dossier.json` `14dadb5c...`; `check_model` 0 mismatch dari 220 row (alpha, safety, total, odds, implied).
+`lib/model.ts` sekarang hanya adapter: `buildModel()` mendelegasikan ke `RCModel.buildModel()` di `dashboard/01-model.js`. `main.ts` memakai adapter itu. Build deterministik: `board.json` sha256 `53344f92...`, `data.js` `4de644e8...`, `dossier.json` `14dadb5c...`; `check_model` 0 mismatch dari 220 row (alpha, safety, total, odds, implied).
 
 ## 3. Lima upgrade
 
