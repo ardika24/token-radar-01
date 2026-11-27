@@ -70,8 +70,8 @@ Playwright 1.62 / Chrome, desktop 1440x900:
 
 Gate internal:
 - `board.json`: 220 row, rank 1..220 unik, 40 watchlist covered, implied unik & non-naik, farm_steps 3-12 string @20-600.
-- `dashboard/`: 13 file, 119.522 B <4 MiB, index.html + css + js, tidak ada `http://`/`https://` di HTML attribute/CSS/JS import.
-- `dossier.json`: 1.223.078 B <1,5 MiB, text 61.985 B <65.536, 4 gambar.
+- `dashboard/`: 13 file, 119.580 B <4 MiB, index.html + css + js, tidak ada `http://`/`https://` di HTML attribute/CSS/JS import.
+- `dossier.json`: 1.222.694 B <1,5 MiB, text 61.997 B <65.536, 4 gambar.
 - build deterministik: run kedua menghasilkan dossier hash identik.
 
 ## 5. Skor / win-draw-loss
