@@ -1,4 +1,4 @@
-/* TOKEN RADAR / model-page.js - MODEL & SANDBOX. All math from RCModel. */
+/* TOKEN RADAR / 04-model-page.js - MODEL & SANDBOX. All math from RCModel. */
 (function () {
   "use strict";
 

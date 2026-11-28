@@ -1,4 +1,4 @@
-/* TOKEN RADAR / guide.js - the Farm Guide page. Reads RCPlan and RC.data only. */
+/* TOKEN RADAR / 03-guide.js - the Farm Guide page. Reads RCPlan and RC.data only. */
 (function () {
   "use strict";
 

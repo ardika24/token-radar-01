@@ -1,4 +1,4 @@
-/* TOKEN RADAR / 00-plan.js
+/* TOKEN RADAR / 02-plan.js
  * The farm-plan generator the drawer and the Farm Guide both call.
  * Every sentence comes from this row: chains, TVL tier, 7d move, age,
  * score, odds and verdict. No per-protocol copy is stored anywhere.
@@ -8,7 +8,7 @@
   "use strict";
 
   var M = root.RCModel;
-  if (!M) throw new Error("00-plan.js needs 00-model.js first");
+  if (!M) throw new Error("02-plan.js needs 01-model.js first");
 
   var VENUE_EXCLUDE = { coinbase: 1, bybit: 1, kraken: 1, bitget: 1, okx: 1, bitfinex: 1, gemini: 1 };
 

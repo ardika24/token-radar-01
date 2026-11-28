@@ -39,7 +39,7 @@ MODEL recomputes from `anchor_rows` (128 live tokens), not a baked number. Each 
 
 Sealed snapshot leave-one-out: n=128, MdAPE=1.641 log points, Spearman=0.422. Page recomputes, not hardcoded. The category prior is not a regression on token's own price; next, hold out a random 20% and the latest 20%.
 
-Snapshot 758 protocols; 40 lack 7d change and 113 lack a listing date. They are read at 0 and 540 days, flagged "assumed", and counted in the integrity strip. Implied value is the board's claim, not make.fun's.
+Snapshot 758 protocols; 4 lack 7d change and 113 lack a listing date. They are read at 0 and 540 days, flagged "assumed", and counted in the integrity strip. Implied value is the board's claim, not make.fun's.
 
 `main.ts` reads `/input/snapshot.json` and writes `/output/` (`dossier.json`, `board.json`, `data.js`, `dashboard/`, `screenshots/`).
 

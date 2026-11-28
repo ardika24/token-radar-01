@@ -1,4 +1,4 @@
-/* TOKEN RADAR / 00-model.js
+/* TOKEN RADAR / 01-model.js
  * The valuation, odds and score terms the page renders, in one place.
  * Pure math only: no fetch, no DOM, no clock. The build imports this file
  * (side effect: globalThis.RCModel) and the dashboard reads the same object.
